@@ -1,3 +1,4 @@
+import 'package:first_app/widgets/budget_chart.dart';
 import 'package:first_app/widgets/new_transaction.dart';
 import './models/transaction.dart';
 import './widgets/transactions_list.dart';
@@ -52,10 +53,16 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final List<Transaction> _userTransactions = [
-    Transaction(
-        id: 't1', title: 'New Shoes', amount: 69.99, date: DateTime.now()),
-    Transaction(id: 't2', title: 'New Bag', amount: 90.99, date: DateTime.now())
+    // Transaction(
+    //     id: 't1', title: 'New Shoes', amount: 69.99, date: DateTime.now()),
+    // Transaction(id: 't2', title: 'New Bag', amount: 90.99, date: DateTime.now())
   ];
+
+  List<Transaction> get _recentTransactions {
+    return _userTransactions.where((tx) {
+      return tx.date.isAfter(DateTime.now().subtract(const Duration(days: 7)));
+    }).toList();
+  }
 
   void _addNewTransaction(String title, double amount) {
     final newTx = Transaction(
@@ -99,13 +106,7 @@ class _MyHomePageState extends State<MyHomePage> {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Card(
-            elevation: 5,
-            child: Container(
-              width: double.infinity,
-              child: const Text('Chart'),
-            ),
-          ),
+          BudgetChart(transactions: _recentTransactions),
           TransactionsList(_userTransactions)
         ],
       ),
