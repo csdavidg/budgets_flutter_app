@@ -14,7 +14,7 @@ class _NewTransactionState extends State<NewTransaction> {
 
   final _amountController = TextEditingController();
 
-  var _dateTx;
+  var _datePicked;
 
   void _submit() {
     final title = _titleController.text;
@@ -24,7 +24,7 @@ class _NewTransactionState extends State<NewTransaction> {
       return;
     }
 
-    widget.addTx(title, amount, _dateTx);
+    widget.addTx(title, amount, _datePicked);
     Navigator.of(context).pop();
   }
 
@@ -34,7 +34,7 @@ class _NewTransactionState extends State<NewTransaction> {
             initialDate: DateTime.now(),
             firstDate: DateTime.now().subtract(const Duration(days: 10)),
             lastDate: DateTime.now())
-        .then((value) => _dateTx = value);
+        .then((value) => _datePicked = value);
   }
 
   @override
@@ -68,9 +68,9 @@ class _NewTransactionState extends State<NewTransaction> {
               height: 70,
               child: Row(
                 children: <Widget>[
-                  Text(_dateTx == null
+                  Text(_datePicked == null
                       ? 'No Date Chosen!'
-                      : DateFormat.yMMMMd().format(_dateTx)),
+                      : DateFormat.yMMMMd().format(_datePicked)),
                   TextButton(
                     onPressed: _showDatePicker,
                     child: Text(
