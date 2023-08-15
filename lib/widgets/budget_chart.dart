@@ -1,4 +1,3 @@
-import "package:collection/collection.dart";
 import 'package:first_app/widgets/chart_bars.dart';
 import 'package:flutter/material.dart';
 
@@ -12,7 +11,9 @@ class BudgetChart extends StatelessWidget {
 
   List<Map<String, Object>> get groupedTransactionValues {
     return List.generate(7, (index) {
-      var weekDay = DateTime.now().subtract(Duration(days: index));
+      var weekDay = DateTime.now().subtract(
+        Duration(days: index),
+      );
       var totalSpendPerDay = 0.0;
       for (var tx in transactions) {
         if (tx.date.day == weekDay.day &&
@@ -25,7 +26,7 @@ class BudgetChart extends StatelessWidget {
         'day': DateFormat.E().format(weekDay),
         'amount': totalSpendPerDay
       };
-    });
+    }).reversed.toList();
   }
 
   double get totalSpending {

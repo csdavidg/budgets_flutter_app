@@ -18,9 +18,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Personal Expenses',
       theme: ThemeData(
-        primarySwatch: Colors.purple,
-        colorScheme:
-            ColorScheme.fromSwatch().copyWith(secondary: Colors.amberAccent),
+        colorScheme: ColorScheme.fromSwatch(
+          primarySwatch: Colors.purple,
+        ).copyWith(
+          primary: Colors.purple,
+          secondary: Colors.amberAccent,
+        ),
         fontFamily: 'Quicksand',
         textTheme: const TextTheme(
           titleLarge: TextStyle(
@@ -28,6 +31,17 @@ class MyApp extends StatelessWidget {
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
+          titleMedium: TextStyle(
+            fontFamily: 'OpenSans',
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+          titleSmall: TextStyle(
+            fontFamily: 'OpenSans',
+            fontWeight: FontWeight.normal,
+            color: Colors.black,
+          ),
+          labelLarge: TextStyle(color: Colors.black),
         ),
         appBarTheme: const AppBarTheme(
           titleTextStyle: TextStyle(
@@ -64,11 +78,11 @@ class _MyHomePageState extends State<MyHomePage> {
     }).toList();
   }
 
-  void _addNewTransaction(String title, double amount) {
+  void _addNewTransaction(String title, double amount, DateTime date) {
     final newTx = Transaction(
         title: title,
         amount: amount,
-        date: DateTime.now(),
+        date: date,
         id: DateTime.now().toString());
 
     setState(() {
@@ -89,7 +103,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Personal Expenses'),
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         actions: <Widget>[
           IconButton(
             onPressed: () => _startNewTransaction(context),
