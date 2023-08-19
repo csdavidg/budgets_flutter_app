@@ -1,11 +1,15 @@
 import 'package:first_app/widgets/budget_chart.dart';
 import 'package:first_app/widgets/new_transaction.dart';
+import 'package:flutter/services.dart';
 import './models/transaction.dart';
 import './widgets/transactions_list.dart';
 
 import 'package:flutter/material.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
   runApp(const MyApp());
 }
 
@@ -67,9 +71,43 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final List<Transaction> _userTransactions = [
-    // Transaction(
-    //     id: 't1', title: 'New Shoes', amount: 69.99, date: DateTime.now()),
-    // Transaction(id: 't2', title: 'New Bag', amount: 90.99, date: DateTime.now())
+    Transaction(
+        id: 't1', title: 'New Shoes', amount: 69.99, date: DateTime.now()),
+    Transaction(
+        id: 't2',
+        title: 'New Bag1',
+        amount: 9.99,
+        date: DateTime.now().subtract(const Duration(days: 1))),
+    Transaction(
+        id: 't23',
+        title: 'New Bag2',
+        amount: 5.99,
+        date: DateTime.now().subtract(const Duration(days: 2))),
+    Transaction(
+        id: 't24',
+        title: 'New Bag3',
+        amount: 5.99,
+        date: DateTime.now().subtract(const Duration(days: 4))),
+    Transaction(
+        id: 't25',
+        title: 'New Bag4',
+        amount: 6.99,
+        date: DateTime.now().subtract(const Duration(days: 3))),
+    Transaction(
+        id: 't26',
+        title: 'New Bag5',
+        amount: 3.99,
+        date: DateTime.now().subtract(const Duration(days: 5))),
+    Transaction(
+        id: 't27',
+        title: 'New Bag6',
+        amount: 6.99,
+        date: DateTime.now().subtract(const Duration(days: 4))),
+    Transaction(
+        id: 't28',
+        title: 'New Bag7',
+        amount: 6.99,
+        date: DateTime.now().subtract(const Duration(days: 3)))
   ];
 
   List<Transaction> get _recentTransactions {
@@ -98,31 +136,52 @@ class _MyHomePageState extends State<MyHomePage> {
         });
   }
 
+  void _deleteTransactions(String idToDelete) {
+    setState(() {
+      _userTransactions.removeWhere((element) => element.id == idToDelete);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    var appBar = AppBar(
+      title: const Text('Personal Expenses'),
+      backgroundColor: Theme.of(context).colorScheme.primary,
+      actions: <Widget>[
+        IconButton(
+          onPressed: () => _startNewTransaction(context),
+          icon: const Icon(Icons.add),
+        ),
+      ],
+    );
+
+    var appBarSize = appBar.preferredSize;
+    var systemStatusBarSize = MediaQuery.of(context).padding.top;
+    var remainingSize = MediaQuery.of(context).size.height -
+        (appBarSize.height + systemStatusBarSize);
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Personal Expenses'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        actions: <Widget>[
-          IconButton(
-            onPressed: () => _startNewTransaction(context),
-            icon: const Icon(Icons.add),
-          ),
-        ],
-      ),
+      appBar: appBar,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () => _startNewTransaction(context),
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          BudgetChart(transactions: _recentTransactions),
-          TransactionsList(_userTransactions)
-        ],
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            SizedBox(
+              height: remainingSize * 0.25,
+              child: BudgetChart(transactions: _recentTransactions),
+            ),
+            SizedBox(
+              height: remainingSize * 0.75,
+              child: TransactionsList(_userTransactions, _deleteTransactions),
+            ),
+          ],
+        ),
       ),
     );
   }
