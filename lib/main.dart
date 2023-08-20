@@ -1,15 +1,11 @@
 import 'package:first_app/widgets/budget_chart.dart';
 import 'package:first_app/widgets/new_transaction.dart';
-import 'package:flutter/services.dart';
 import './models/transaction.dart';
 import './widgets/transactions_list.dart';
 
 import 'package:flutter/material.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations(
-      [DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
   runApp(const MyApp());
 }
 
@@ -70,45 +66,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final List<Transaction> _userTransactions = [
-    Transaction(
-        id: 't1', title: 'New Shoes', amount: 69.99, date: DateTime.now()),
-    Transaction(
-        id: 't2',
-        title: 'New Bag1',
-        amount: 9.99,
-        date: DateTime.now().subtract(const Duration(days: 1))),
-    Transaction(
-        id: 't23',
-        title: 'New Bag2',
-        amount: 5.99,
-        date: DateTime.now().subtract(const Duration(days: 2))),
-    Transaction(
-        id: 't24',
-        title: 'New Bag3',
-        amount: 5.99,
-        date: DateTime.now().subtract(const Duration(days: 4))),
-    Transaction(
-        id: 't25',
-        title: 'New Bag4',
-        amount: 6.99,
-        date: DateTime.now().subtract(const Duration(days: 3))),
-    Transaction(
-        id: 't26',
-        title: 'New Bag5',
-        amount: 3.99,
-        date: DateTime.now().subtract(const Duration(days: 5))),
-    Transaction(
-        id: 't27',
-        title: 'New Bag6',
-        amount: 6.99,
-        date: DateTime.now().subtract(const Duration(days: 4))),
-    Transaction(
-        id: 't28',
-        title: 'New Bag7',
-        amount: 6.99,
-        date: DateTime.now().subtract(const Duration(days: 3)))
-  ];
+  final List<Transaction> _userTransactions = [];
+
+  var _showChart = false;
 
   List<Transaction> get _recentTransactions {
     return _userTransactions.where((tx) {
@@ -117,6 +77,45 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _addNewTransaction(String title, double amount, DateTime date) {
+    final List<Transaction> mockedValues = [
+      Transaction(
+          id: 't1', title: 'New Shoes', amount: 69.99, date: DateTime.now()),
+      Transaction(
+          id: 't2',
+          title: 'New Bag1',
+          amount: 9.99,
+          date: DateTime.now().subtract(const Duration(days: 1))),
+      Transaction(
+          id: 't23',
+          title: 'New Bag2',
+          amount: 5.99,
+          date: DateTime.now().subtract(const Duration(days: 2))),
+      Transaction(
+          id: 't24',
+          title: 'New Bag3',
+          amount: 5.99,
+          date: DateTime.now().subtract(const Duration(days: 4))),
+      Transaction(
+          id: 't25',
+          title: 'New Bag4',
+          amount: 6.99,
+          date: DateTime.now().subtract(const Duration(days: 3))),
+      Transaction(
+          id: 't26',
+          title: 'New Bag5',
+          amount: 3.99,
+          date: DateTime.now().subtract(const Duration(days: 5))),
+      Transaction(
+          id: 't27',
+          title: 'New Bag6',
+          amount: 6.99,
+          date: DateTime.now().subtract(const Duration(days: 4))),
+      Transaction(
+          id: 't28',
+          title: 'New Bag7',
+          amount: 6.99,
+          date: DateTime.now().subtract(const Duration(days: 3)))
+    ];
     final newTx = Transaction(
         title: title,
         amount: amount,
@@ -125,6 +124,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     setState(() {
       _userTransactions.add(newTx);
+      _userTransactions.addAll(mockedValues);
     });
   }
 
@@ -144,6 +144,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final isLandScape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
     var appBar = AppBar(
       title: const Text('Personal Expenses'),
       backgroundColor: Theme.of(context).colorScheme.primary,
@@ -160,6 +163,11 @@ class _MyHomePageState extends State<MyHomePage> {
     var remainingSize = MediaQuery.of(context).size.height -
         (appBarSize.height + systemStatusBarSize);
 
+    var transactionsListWidget = SizedBox(
+      height: remainingSize * 0.75,
+      child: TransactionsList(_userTransactions, _deleteTransactions),
+    );
+
     return Scaffold(
       appBar: appBar,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
@@ -172,14 +180,35 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            SizedBox(
-              height: remainingSize * 0.25,
-              child: BudgetChart(transactions: _recentTransactions),
-            ),
-            SizedBox(
-              height: remainingSize * 0.75,
-              child: TransactionsList(_userTransactions, _deleteTransactions),
-            ),
+            if (isLandScape)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const FittedBox(
+                    child: Text('Show Chart'),
+                  ),
+                  Switch(
+                      value: _showChart,
+                      onChanged: (val) {
+                        setState(() {
+                          _showChart = val;
+                        });
+                      }),
+                ],
+              ),
+            if (isLandScape)
+              _showChart
+                  ? SizedBox(
+                      height: remainingSize * 0.7,
+                      child: BudgetChart(transactions: _recentTransactions),
+                    )
+                  : transactionsListWidget,
+            if (!isLandScape)
+              SizedBox(
+                height: remainingSize * 0.3,
+                child: BudgetChart(transactions: _recentTransactions),
+              ),
+            if (!isLandScape) transactionsListWidget,
           ],
         ),
       ),
