@@ -39,54 +39,60 @@ class _NewTransactionState extends State<NewTransaction> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 5,
-      child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: <Widget>[
-            TextField(
-              decoration: const InputDecoration(
-                labelText: 'Title',
+    return SingleChildScrollView(
+      child: Card(
+        elevation: 5,
+        child: Padding(
+          padding: EdgeInsets.only(
+              left: 10,
+              right: 10,
+              top: 10,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: <Widget>[
+              TextField(
+                decoration: const InputDecoration(
+                  labelText: 'Title',
+                ),
+                style: Theme.of(context).textTheme.titleSmall,
+                controller: _titleController,
+                onSubmitted: (_) => _submit(),
               ),
-              style: Theme.of(context).textTheme.titleSmall,
-              controller: _titleController,
-              onSubmitted: (_) => _submit(),
-            ),
-            TextField(
-              decoration: const InputDecoration(
-                labelText: 'Amount',
+              TextField(
+                decoration: const InputDecoration(
+                  labelText: 'Amount',
+                ),
+                style: Theme.of(context).textTheme.titleSmall,
+                controller: _amountController,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: false),
+                onSubmitted: (_) => _submit(),
               ),
-              style: Theme.of(context).textTheme.titleSmall,
-              controller: _amountController,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: false),
-              onSubmitted: (_) => _submit(),
-            ),
-            SizedBox(
-              height: 70,
-              child: Row(
-                children: <Widget>[
-                  Text(_datePicked == null
-                      ? 'No Date Chosen!'
-                      : DateFormat.yMMMMd().format(_datePicked)),
-                  TextButton(
-                    onPressed: _showDatePicker,
-                    child: Text(
-                      'Chose Date',
-                      style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary),
+              SizedBox(
+                height: 70,
+                child: Row(
+                  children: <Widget>[
+                    Text(_datePicked == null
+                        ? 'No Date Chosen!'
+                        : DateFormat.yMMMMd().format(_datePicked)),
+                    TextButton(
+                      onPressed: _showDatePicker,
+                      child: Text(
+                        'Chose Date',
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            ElevatedButton(
-              onPressed: _submit,
-              child: const Text('Add Transaction'),
-            )
-          ],
+              ElevatedButton(
+                onPressed: _submit,
+                child: const Text('Add Transaction'),
+              )
+            ],
+          ),
         ),
       ),
     );

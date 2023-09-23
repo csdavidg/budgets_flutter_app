@@ -1,11 +1,15 @@
+import 'dart:io';
+
 import 'package:first_app/widgets/budget_chart.dart';
 import 'package:first_app/widgets/new_transaction.dart';
+import 'package:flutter/cupertino.dart';
 import './models/transaction.dart';
 import './widgets/transactions_list.dart';
 
 import 'package:flutter/material.dart';
 
 void main() {
+  //Respecting the Softkeyboard Insets
   runApp(const MyApp());
 }
 
@@ -15,7 +19,23 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    // ignore: unused_local_variable
+    var cuppertinoApp = const CupertinoApp(
+      title: 'Personal Expenses',
+      theme: CupertinoThemeData(
+        primaryColor: Colors.purple,
+        textTheme: CupertinoTextThemeData(
+          textStyle: TextStyle(
+            fontFamily: 'OpenSans',
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
+      ),
+      home: MyHomePage(title: 'Personal Expenses'),
+    );
+
+    final materialApp = MaterialApp(
       title: 'Personal Expenses',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSwatch(
@@ -51,15 +71,18 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: MyHomePage(title: 'Personal Expenses'),
+      home: const MyHomePage(title: 'Personal Expenses'),
     );
+
+    //return Platform.isIOS ? cuppertinoApp : materialApp;
+    return materialApp;
   }
 }
 
 class MyHomePage extends StatefulWidget {
   final String title;
 
-  MyHomePage({super.key, required this.title});
+  const MyHomePage({super.key, required this.title});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -129,11 +152,24 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _startNewTransaction(BuildContext ctx) {
-    showModalBottomSheet(
-        context: ctx,
-        builder: (_) {
-          return NewTransaction(addTx: _addNewTransaction);
-        });
+    if (Platform.isIOS) {
+      /*showCupertinoModalPopup(
+          context: context,
+          builder: (_) {
+            return NewTransaction(addTx: _addNewTransaction);
+          });*/
+      showModalBottomSheet(
+          context: ctx,
+          builder: (_) {
+            return NewTransaction(addTx: _addNewTransaction);
+          });
+    } else {
+      showModalBottomSheet(
+          context: ctx,
+          builder: (_) {
+            return NewTransaction(addTx: _addNewTransaction);
+          });
+    }
   }
 
   void _deleteTransactions(String idToDelete) {
@@ -142,13 +178,61 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final isLandScape =
-        MediaQuery.of(context).orientation == Orientation.landscape;
+  List<Widget> _buildLandScape(
+      Widget transactionsListWidget, double remainingSize) {
+    return [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          FittedBox(
+            child: Text(
+              'Show Chart',
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
+          ),
+          Switch.adaptive(
+              activeColor: Theme.of(context).colorScheme.secondary,
+              value: _showChart,
+              onChanged: (val) {
+                setState(() {
+                  _showChart = val;
+                });
+              }),
+        ],
+      ),
+      _showChart
+          ? SizedBox(
+              height: remainingSize * 0.7,
+              child: BudgetChart(transactions: _recentTransactions),
+            )
+          : transactionsListWidget,
+    ];
+  }
 
-    var appBar = AppBar(
-      title: const Text('Personal Expenses'),
+  List<Widget> _buildPortrait(
+      Widget transactionsListWidget, double remainingSize) {
+    return [
+      SizedBox(
+        height: remainingSize * 0.3,
+        child: BudgetChart(transactions: _recentTransactions),
+      ),
+      transactionsListWidget,
+    ];
+  }
+
+  PreferredSizeWidget _buildCupertinoAppBar(Text pageTittle) {
+    return CupertinoNavigationBar(
+      middle: pageTittle,
+      trailing: GestureDetector(
+        child: const Icon(CupertinoIcons.add),
+        onTap: () => _startNewTransaction(context),
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildMaterialAppBar(Text pageTittle) {
+    return AppBar(
+      title: pageTittle,
       backgroundColor: Theme.of(context).colorScheme.primary,
       actions: <Widget>[
         IconButton(
@@ -157,61 +241,59 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ],
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final isLandScape = mediaQuery.orientation == Orientation.landscape;
+    const pageTittle = Text('Personal Expenses');
+
+    var appBar = Platform.isIOS
+        ? _buildCupertinoAppBar(pageTittle)
+        : _buildMaterialAppBar(pageTittle);
 
     var appBarSize = appBar.preferredSize;
-    var systemStatusBarSize = MediaQuery.of(context).padding.top;
-    var remainingSize = MediaQuery.of(context).size.height -
-        (appBarSize.height + systemStatusBarSize);
+    var systemStatusBarSize = mediaQuery.padding.top;
+    var remainingSize =
+        mediaQuery.size.height - (appBarSize.height + systemStatusBarSize);
 
     var transactionsListWidget = SizedBox(
       height: remainingSize * 0.75,
       child: TransactionsList(_userTransactions, _deleteTransactions),
     );
 
-    return Scaffold(
-      appBar: appBar,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
-        onPressed: () => _startNewTransaction(context),
-      ),
-      body: SingleChildScrollView(
+    var mainBody = SafeArea(
+      child: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             if (isLandScape)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const FittedBox(
-                    child: Text('Show Chart'),
-                  ),
-                  Switch(
-                      value: _showChart,
-                      onChanged: (val) {
-                        setState(() {
-                          _showChart = val;
-                        });
-                      }),
-                ],
-              ),
-            if (isLandScape)
-              _showChart
-                  ? SizedBox(
-                      height: remainingSize * 0.7,
-                      child: BudgetChart(transactions: _recentTransactions),
-                    )
-                  : transactionsListWidget,
+              ..._buildLandScape(transactionsListWidget, remainingSize),
             if (!isLandScape)
-              SizedBox(
-                height: remainingSize * 0.3,
-                child: BudgetChart(transactions: _recentTransactions),
-              ),
-            if (!isLandScape) transactionsListWidget,
+              ..._buildPortrait(transactionsListWidget, remainingSize),
           ],
         ),
       ),
     );
+
+    return Platform.isIOS
+        ? CupertinoPageScaffold(
+            child: mainBody,
+            navigationBar: appBar as CupertinoNavigationBar,
+          )
+        : Scaffold(
+            appBar: appBar as AppBar,
+            floatingActionButtonLocation:
+                FloatingActionButtonLocation.centerFloat,
+            floatingActionButton: Platform.isIOS
+                ? Container()
+                : FloatingActionButton(
+                    child: const Icon(Icons.add),
+                    onPressed: () => _startNewTransaction(context),
+                  ),
+            body: mainBody,
+          );
   }
 }
